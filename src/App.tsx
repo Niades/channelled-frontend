@@ -1,5 +1,8 @@
+import { VideoRoute } from './routes/video'
+
 function App() {
-  return <div className="App"></div>
+  const routeComponent = <VideoRoute></VideoRoute>
+  return <div className="App">{routeComponent}</div>
 }
 
 export default App
