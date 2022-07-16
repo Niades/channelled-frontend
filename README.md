@@ -1,3 +1,5 @@
+![build](https://github.com/niades/channelled-frontend/actions/workflows/build/badge.svg)
+
 # Starting up for development
 
 Install dependencies and init `husky`'s `git` hooks:
