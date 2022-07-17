@@ -1,6 +1,11 @@
+import { injectable } from 'inversify'
 import YTPlayer from 'yt-player'
+import { container } from '../../inversify.config'
+import { TYPES } from '../../types'
 
-enum PlayerStates {
+const MAX_PLAY_RETRIES_COUNT = 25
+
+export enum PlayerStates {
   Unstarted = 'unstarted',
   Ended = 'ended',
   Playing = 'playing',
@@ -9,36 +14,63 @@ enum PlayerStates {
   Cued = 'cued',
 }
 
-class YTPlayerSingleton {
-  private player: YTPlayer
+export interface IYTPlayer {
+  attachTo(id: string): void
+  load(videoId: string): void
+  play(): void
+  pause(): void
+  destroy(): void
+}
+
+@injectable()
+class MYTPlayer implements IYTPlayer {
+  private player: YTPlayer | undefined
+  private videoId: string | undefined
 
   constructor() {}
 
-  attachTo(id: string): void {
-    this.player = new YTPlayer(id, {
-      autoplay: true,
-      modestBranding: true,
-      width: window.visualViewport.width,
-      height: window.visualViewport.height,
-    })
+  attachTo(id: string): boolean {
+    try {
+      this.player = new YTPlayer(id, {
+        autoplay: true,
+        modestBranding: true,
+        width: window.visualViewport.width,
+        height: window.visualViewport.height,
+      })
+      this.player.on('error', (e: any) => {
+        console.error('[YTPlayer]: Error = ', e)
+      })
+      return true
+    } catch (e: any) {
+      console.error('[YTPlayer]: Error = ', e)
+      return false
+    }
   }
 
-  load(videoId: string): void {
-    this.player.load(videoId)
+  load(videoId: string): boolean {
+    try {
+      if (this.player !== undefined) {
+        this.player.load(videoId)
+        this.videoId = videoId
+        return true
+      } else {
+        return false
+      }
+    } catch (e: any) {
+      console.error('[YTPlayer]: Error = ', e)
+      return false
+    }
   }
 
   togglePlayPause() {
-    console.log('togglePlayPause()')
-    // @ts-ignore
+    // @ts-expect-error
     const state: PlayerStates = this.player.getState()
-    console.log({ state })
     if (
       state === PlayerStates.Paused ||
       state === PlayerStates.Unstarted ||
       state === PlayerStates.Cued
     ) {
       this.play()
-      console.log('play() called')
     } else if (
       state === PlayerStates.Playing ||
       state === PlayerStates.Buffering
@@ -48,11 +80,15 @@ class YTPlayerSingleton {
   }
 
   play() {
-    this.player.play()
+    if (this.player !== undefined) {
+      this.player.play()
+    }
   }
 
   pause() {
-    this.player.pause()
+    if (this.player !== undefined) {
+      this.player.pause()
+    }
   }
 
   destroy() {
@@ -61,12 +97,8 @@ class YTPlayerSingleton {
     }
   }
 
-  get isReady() {
-    return this.player !== undefined
-  }
-
   get isPlaying() {
-    if (this.isReady) {
+    if (this.player !== undefined) {
       return this.player.getState() === PlayerStates.Playing
     } else {
       return false
@@ -74,6 +106,8 @@ class YTPlayerSingleton {
   }
 }
 
-const y = new YTPlayerSingleton()
+const singleton = new MYTPlayer()
+container.bind<IYTPlayer>(TYPES.YTPlayer).toConstantValue(singleton)
 
-export { y as YTPlayer }
+export default singleton
+export { MYTPlayer as YTPlayer }

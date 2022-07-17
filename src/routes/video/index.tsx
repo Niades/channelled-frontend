@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
-import { YTPlayer } from '../../services/YTPlayer'
+import { useCallback, useEffect } from 'react'
 import { UIOverlay } from '../../components/UIOverlay'
+import { useDispatch } from '../../hooks/store'
+import { load, attachTo, destroy } from '../../store/slices/playerSlice'
 
 interface VideoRouteProps {
   videoId?: string
 }
 
 function VideoRoute({ videoId }: VideoRouteProps) {
+  const dispatch = useDispatch()
   const onBackdropClick = useCallback(
+    // @ts-expect-error
     (e: MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.preventDefault()
       e.stopPropagation()
@@ -16,15 +19,12 @@ function VideoRoute({ videoId }: VideoRouteProps) {
   )
   // on mount
   useEffect(() => {
-    YTPlayer.attachTo('#player')
+    dispatch(attachTo('#player'))
     if (videoId !== null && videoId !== undefined) {
-      YTPlayer.load(videoId)
-      YTPlayer.play()
+      dispatch(load(videoId))
     }
     return () => {
-      if (YTPlayer.isReady) {
-        YTPlayer.destroy()
-      }
+      dispatch(destroy())
     }
   }, [])
   return (
