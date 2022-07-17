@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
-import { IYTPlayer, PlayerStates, YTPlayer } from '../../services/YTPlayer'
+import {
+  IYTPlayer,
+  PlayerStates,
+  YTPlayer as YTPlayerService,
+} from '../../services/YTPlayer'
 // @ts-expect-error
 import { container } from '../../../inversify.config.ts'
 import { TYPES } from '../../../types'
@@ -12,7 +16,7 @@ interface PlayerState {
   isPlaying: boolean
 }
 
-const YTPlayer: YTPlayer = container.get<IYTPlayer>(TYPES.YTPlayer)
+const YTPlayer: YTPlayerService = container.get<IYTPlayer>(TYPES.YTPlayer)
 
 const initialState: PlayerState = {
   state: PlayerStates.Unstarted,
