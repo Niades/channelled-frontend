@@ -33,6 +33,11 @@ export const playerSlice = createSlice({
   name: 'player',
   initialState,
   reducers: {
+    pause(state) {
+      YTPlayer.pause()
+      state.isPlaying = false
+      return state
+    },
     attachTo(state, action) {
       const attached = YTPlayer.attachTo(action.payload)
       if (attached) {
@@ -62,7 +67,7 @@ export const playerSlice = createSlice({
 
 export { playAsync }
 
-export const { load, destroy, attachTo } = playerSlice.actions
+export const { pause, load, destroy, attachTo } = playerSlice.actions
 
 export const selectPlayerState = (state: RootState) => state.player
 
